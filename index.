@@ -1,0 +1,192 @@
+<!doctype html>  
+<html lang="vi">  
+<head>  
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">  
+<title>400 MCQ Sinh học đại cương & VSV</title>  
+<style>  
+body{font-family:system-ui,Arial;margin:0;background:#f6f7fb;color:#111}  
+header{position:sticky;top:0;background:#111827;color:#fff;padding:12px;z-index:10}  
+.wrap{max-width:900px;margin:auto;padding:12px}  
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}  
+button{cursor:pointer;border:1px solid #ccc;border-radius:8px;padding:8px 12px;background:#fff}  
+select{padding:8px;border-radius:8px}  
+.q{background:#fff;border-radius:12px;padding:12px;margin:10px 0;border:1px solid #e5e7eb}  
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:9px;border-radius:8px}  
+.opt.correct{background:#dcfce7;border-color:#16a34a}  
+.opt.wrong{background:#fee2e2;border-color:#dc2626}  
+.meta{font-size:12px;color:#666}  
+.exp{display:none;background:#f1f5f9;padding:8px;border-radius:8px;margin-top:8px}  
+.score{font-weight:bold}  
+#progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}  
+#pfill{height:100%;width:0;background:#22c55e}  
+</style>  
+</head>  
+<body>  
+<header><div class="wrap">  
+<b>400 MCQ - Tế bào / Chuyển hóa / VSV / Truyền tin - TS Nguyễn Thị Lan Anh</b>  
+<div id="progress"><div id="pfill"></div></div>  
+<div class="score"><span id="s">Đúng:0 Sai:0 / 400</span> <span id="p"></span></div>  
+</div></header>  
+<div class="wrap">  
+<div class="bar">  
+<select id="f"><option value="0">Tất cả 400 câu</option><option value="1">P1: Tế bào & Màng (1-80)</option><option value="2">P2: Trao đổi chất (81-180)</option><option value="3">P3: VSV & Ứng dụng (181-300)</option><option value="4">P4: Phân loại & Truyền tin (301-400)</option></select>  
+<button onclick="shuffle()">Xáo trộn</button>  
+<button onclick="reset()">Làm lại</button>  
+<input id="k" placeholder="Tìm từ khóa..." oninput="render()" style="padding:8px;border-radius:8px;border:1px solid #ccc">  
+</div>  
+<div id="list"></div>  
+</div>  
+<script>  
+// format: [phan, cau hoi, A,B,C,D, dapAn(0-3)]  
+const BANK=[  
+// ==== P1 1-80 ====  
+[1,"Hooke 1665 phát hiện gì?","Tế bào chết cây bần","Vi khuẩn","DNA","Virus",0],  
+[1,"Học thuyết tế bào khẳng định?","Mọi SV từ tế bào","Tế bào tự sinh","Chỉ TV có TB","TB không sinh sản",0],  
+[1,"Kích thước nhân sơ?","0.5-5 µm","10-100 µm","50-500 µm","0.01-0.1 µm",0],  
+[1,"Kích thước nhân thực?","10-100 µm","0.5-5 µm","1-2 µm","200-500 µm",0],  
+[1,"Ý nghĩa S/V lớn ở VSV?","Trao đổi chất nhanh","Dễ chết","Ít màng","Sinh sản chậm",0],  
+[1,"Vỏ nhầy capsule có vai trò?","Chống thực bào,bám","Quang hợp","Tổng hợp ATP","Vận động",0],  
+[1,"Pili/fimbriae giúp?","Bám, tiếp hợp","Bơi","Quang hợp","Hô hấp",0],  
+[1,"Roi vi khuẩn giúp?","Di động","Bám","Tiếp hợp","Bảo vệ",0],  
+[1,"Vùng nhân VK chứa?","DNA vòng kép","DNA thẳng + histon","Nhiều NST","Nhân con",0],  
+[1,"Plasmid là?","DNA vòng ngoài NST","DNA NST","RNA","Protein",0],  
+[1,"R-plasmid gây?","Kháng thuốc","Cố định đạm","Phát sáng","Sinh độc tố Bt",0],  
+[1,"Thành VK cấu tạo bởi?","Peptidoglycan","Cellulose","Chitin","Silica",0],  
+[1,"Gram dương nhuộm?","Tím, thành dày","Hồng, thành mỏng","Vàng","Xanh",0],  
+[1,"Gram âm nhuộm?","Hồng, mỏng+LPS","Tím, dày","Không màu","Đen",0],  
+[1,"LPS ở đâu?","Màng ngoài Gram âm","Gram dương","Nấm","TV",0],  
+[1,"LPS gây?","Nội độc tố","Ngoại độc tố","Vitamin","Kháng sinh",0],  
+[1,"Ribosome nhân sơ?","70S","80S","60S","100S",0],  
+[1,"Ribosome nhân thực TBC?","80S","70S","50S","30S",0],  
+[1,"Màng sinh chất VK làm gì?","Hô hấp, vận chuyển","Quang hợp tạo O2","Tổng hợp cellulose","Cố định N",0],  
+[1,"Tế bào chất VK chứa?","Ribosome, enzyme","Ty thể","Lục lạp","Nhân thật",0],  
+[1,"Nhân thực có?","Nhân thật + bào quan màng","DNA vòng trần","Không màng nhân","Peptidoglycan",0],  
+[1,"Màng nhân có?","Màng kép + lỗ nhân","Màng đơn","Không lỗ","Peptidoglycan",0],  
+[1,"Hạch nhân tạo?","rRNA+ribosome","DNA","ATP","Lipid",0],  
+[1,"Lưới nội chất hạt có?","Ribosome, tổng hợp protein","Trơn, lipid","Tiêu hóa","Quang hợp",0],  
+[1,"Lưới nội chất trơn làm?","Tổng hợp lipid, khử độc","Tổng hợp protein","Tiêu hóa","ATP",0],  
+[1,"Golgi là?","Đóng gói, phân loại protein","Tiêu hóa","Hô hấp","Quang hợp",0],  
+[1,"Lysosome chứa?","Enzyme thủy phân acid","ATP","Chlorophyll","DNA",0],  
+[1,"Lysosome làm?","Thực bào, tự thực","Quang hợp","Tổng hợp lipid","Vận động",0],  
+[1,"Không bào trung tâm ở?","Tế bào thực vật","Động vật","Vi khuẩn","Virus",0],  
+[1,"Không bào co bóp ở?","ĐV đơn bào nước ngọt","TV","Nấm","VK",0],  
+[1,"Peroxisome phân giải?","H2O2, acid béo","Protein","DNA","Tinh bột",0],  
+[1,"Glyoxysome có ở?","Hạt thực vật, chuyển lipid-đường","ĐV","VK","Người",0],  
+[1,"Ty thể tạo?","ATP","Glucose","O2","DNA",0],  
+[1,"Mào ty thể là nơi?","Chuỗi truyền e + ATP synthase","Calvin","Đường phân","Quang phân ly",0],  
+[1,"Lục lạp chứa?","Thylakoid/stroma, chlorophyll","Mào","Lysosome","Peptidoglycan",0],  
+[1,"Thylakoid diễn ra?","Pha sáng","Calvin","Krebs","Đường phân",0],  
+[1,"Stroma diễn ra?","Calvin","Pha sáng","Krebs","Lên men",0],  
+[1,"Vi ống cấu tạo?","Tubulin","Actin","Keratin","Myosin",0],  
+[1,"Vi sợi cấu tạo?","Actin","Tubulin","Chitin","Cellulose",0],  
+[1,"Sợi trung gian?","Keratin, bền cơ học","Tubulin","Actin","DNA",0],  
+[1,"Trung thể là?","MTOC, tạo thoi","Tạo ATP","Quang hợp","Tiêu hóa",0],  
+[1,"Thành TV bằng?","Cellulose","Chitin","Peptidoglycan","Silica",0],  
+[1,"Thành nấm bằng?","Chitin","Cellulose","Peptidoglycan","Keratin",0],  
+[1,"ECM ở ĐV chứa?","Collagen, fibronectin","Cellulose","Chitin","LPS",0],  
+[1,"Mô hình màng?","Khảm lỏng","Sandwich cứng","Tĩnh","Đơn lớp",0],  
+[1,"Lớp kép màng là?","Phospholipid","Protein","Cellulose","DNA",0],  
+[1,"Phospholipid có tính?","Lưỡng phần","Kỵ nước hoàn toàn","Ưa nước hoàn toàn","Trung tính",0],  
+[1,"Glycolipid <5% làm?","Nhận biết tế bào","Tạo ATP","Vận động","Co cơ",0],  
+[1,"Cholesterol làm?","Đệm tính lỏng theo nhiệt","Tạo ATP","Nhận biết","Vận chuyển O2",0],  
+[1,"Nhiệt cao cholesterol?","Giảm lỏng","Tăng lỏng","Phá màng","Không đổi",0],  
+[1,"Nhiệt thấp cholesterol?","Ngăn đông cứng","Làm cứng","Phá hủy","Không tác dụng",0],  
+[1,"Protein xuyên màng?","Xoắn alpha kỵ nước","Ưa nước","Tan","Nằm ngoài",0],  
+[1,"Protein ngoại vi?","Bám bề mặt","Xuyên qua","Trong lipid","Trong DNA",0],  
+[1,"Glycoprotein+glycolipid tạo?","Dấu hiệu nhận biết","ATP","Màng cứng","Roi",0],  
+[1,"Chức năng protein màng?","Vận chuyển, enzym, truyền tin","Quang hợp","Cố định N","Tạo thành",0],  
+[1,"Màng thấm?","Chọn lọc","Hoàn toàn","Không thấm","Thấm mọi chất",0],  
+[1,"Chức năng màng?","Bảo vệ, vận chuyển, nhận tin","Tạo ATP duy nhất","Quang hợp","Tiêu hóa",0],  
+[1,"Kênh aquaporin vận chuyển?","Nước","Protein","DNA","Lipid",0],  
+[1,"Khuếch tán dễ dàng cần?","Protein kênh/mang","ATP","ADP","Ánh sáng",0],  
+[1,"Vận chuyển chủ động cần?","ATP","O2","Ánh sáng","Không năng lượng",0],  
+// ==== P2 81-180 ====  
+[2,"Đồng hóa là?","Tạo chất, tốn ATP","Phân giải, tạo ATP","Không cần NL","Tỏa nhiệt",0],  
+[2,"Dị hóa là?","Phân giải, giải phóng NL","Tổng hợp, tốn NL","Quang hợp","Cố định",0],  
+[2,"Nguồn C tự dưỡng?","CO2","Glucose","Protein","Lipid",0],  
+[2,"Dị dưỡng dùng C?","Chất hữu cơ","CO2","CO","HCO3",0],  
+[2,"Quang năng từ?","Ánh sáng","Hóa chất","Nhiệt","Điện",0],  
+[2,"Hóa năng từ?","Oxy hóa chất","Ánh sáng","Nước","CO2",0],  
+[2,"ATP gồm?","Adenine+Ribose+3P","Guanine+3P","Acid béo","Amino acid",0],  
+[2,"Liên kết giàu NL ở ATP?","Phosphate","Glycoside","Peptide","Ester",0],  
+[2,"Phosphoryl hóa mức cơ chất ở?","Đường phân+Krebs","ETC","Pha sáng","Calvin",0],  
+[2,"Phosphoryl hóa oxy hóa cần?","ETC+PMF+ATP synthase","Ánh sáng","CO2","Không O2",0],  
+[2,"Đường phân ở đâu?","Bào tương","Ty thể","Lục lạp","Nhân",0],  
+[2,"Đường phân tạo ròng?","2 ATP+2 NADH+2 pyruvate","30 ATP","4 CO2","6 O2",0],  
+[2,"Krebs ở đâu NT?","Chất nền ty thể","Bào tương","Thylakoid","Màng ngoài",0],  
+[2,"Krebs tạo?","NADH,FADH2,CO2,ATP","O2","Glucose","Nước",0],  
+[2,"ETC NT ở?","Màng trong ty thể","Bào tương","Stroma","Nhân",0],  
+[2,"Chất nhận e cuối hiếu khí?","O2","NO3-","SO4--","CO2",0],  
+[2,"Tổng ATP NT hiếu khí?","~30-32","2","4","100",0],  
+[2,"Hô hấp kỵ khí dùng?","NO3-,SO4--,CO2","O2","Ánh sáng","Không ETC",0],  
+[2,"Hiệu suất kỵ khí?","Thấp hơn hiếu khí","Cao hơn","Bằng","Bằng 0",0],  
+[2,"Lên men dùng ETC?","Không","Có","Có O2","Có ánh sáng",0],  
+[2,"Chất nhận e lên men?","Pyruvate/dẫn xuất","O2","NO3-","CO2",0],  
+[2,"Lên men lactic tạo?","Sữa chua, phô mai","Rượu","Bia","Giấm",0],  
+[2,"Lên men ethanol bởi?","S.cerevisiae","Lactobacillus","E.coli","Aspergillus",0],  
+[2,"Lên men ethanol tạo?","Rượu, bia, bánh mì","Sữa","Phô mai","Giấm",0],  
+[2,"ATP lên men?","2/glucose","30","32","0",0],  
+[2,"Lipase thủy phân?","Triglyceride","Protein","Tinh bột","DNA",0],  
+[2,"Glycerol vào?","Đường phân DHAP","Krebs trực tiếp","Calvin","ETC",0],  
+[2,"Acid béo qua?","Beta-oxy hóa -> Acetyl-CoA","Đường phân","Calvin","Lên men",0],  
+[2,"Protease tạo?","Amino acid","Glucose","Acid béo","Nucleotide",0],  
+[2,"Khử amin tạo?","NH4+ + alpha-keto acid","O2","CO","NO3",0],  
+[2,"Rối loạn purine gây?","Gout urate","Tiểu đường","Ung thư","Còi xương",0],  
+[2,"PT quang hợp tổng?","CO2+H2O->glucose+O2","Glucose->CO2","Protein->N","Lipid->ATP",0],  
+[2,"Pha sáng ở?","Màng thylakoid","Stroma","Bào tương","Ty thể",0],  
+[2,"Pha sáng tạo?","ATP,NADPH,O2","Glucose","CO2","ADP",0],  
+[2,"Quang phân ly nước tạo?","O2","CO2","Glucose","ATP",0],  
+[2,"Pha tối ở?","Stroma","Thylakoid","Ty thể","Nhân",0],  
+[2,"Enzyme Calvin?","RubisCO","Amylase","Lipase","ATPase",0],  
+[2,"3 giai đoạn Calvin?","Cố định-Khử-Tái sinh","Phân-Krebs-ETC","Sáng-Tối-Đêm","Lag-Log-Chết",0],  
+[2,"Calvin cần?","ATP+NADPH từ pha sáng","O2","Không NL","Bóng tối hoàn toàn",0],  
+[2,"Oxy hóa pyruvate tạo?","Acetyl-CoA+CO2+NADH","Glucose","O2","Lactate",0],  
+[2,"Acetyl-CoA vào?","Krebs","Đường phân","Calvin","Lên men",0],  
+[2,"NADH vào ETC tạo?","Nhiều ATP","Glucose","O2","CO2",0],  
+[2,"PMF là?","Động lực proton qua màng","Ánh sáng","Nhiệt","pH máu",0],  
+[2,"ATP synthase dùng?","Dòng H+","Ánh sáng","CO2","Nước",0],  
+[2,"Lên men axit hỗn hợp để?","Định danh VK đường ruột","Làm rượu","Làm sữa","Làm bánh",0],  
+[2,"VK hiếu khí ETC ở?","Màng tế bào","Ty thể","Lục lạp","Nhân",0],  
+[2,"Chu trình Krebs giải phóng?","CO2","O2","Ánh sáng","Glucose",0],  
+[2,"Đường phân không cần?","O2","Glucose","ATP mồi","Enzym",0],  
+[2,"Sản phẩm ròng đường phân?","2 pyruvate","2 glucose","6 CO2","Lactate",0],  
+[2,"NAD+ trong lên men được?","Tái sinh từ NADH","Mất","Thành ATP","Thành O2",0],  
+[2,"Quang hợp pha sáng cần ánh sáng?","Có","Không","Tùy","Chỉ tối",0],  
+[2,"Calvin có cần sáng trực tiếp?","Không, dùng ATP/NADPH","Có","Chỉ UV","Chỉ đêm",0],  
+// thêm P2 cho đủ 100 câu  
+[2,"Chlorophyll hấp thụ chủ yếu?","Đỏ+xanh tím","Xanh lá","Vàng","Hồng ngoại",0],  
+[2,"NADPH dùng để?","Khử CO2 thành đường","Tạo O2","Phân giải","Vận động",0],  
+[2,"RuBP là?","Chất nhận CO2","Sản phẩm","Enzym","Ánh sáng",0],  
+[2,"Sản phẩm đầu Calvin?","3-PGA","Glucose","O2","ATP",0],  
+[2,"Tái sinh RuBP tốn?","ATP","O2","CO2","Nước",0],  
+[2,"Hô hấp tạo nhiều ATP nhất ở?","ETC","Đường phân","Krebs","Lên men",0],  
+[2,"Lên men không tạo?","ETC","Lactate","Ethanol","CO2",0],  
+[2,"Beta-oxy hóa ở đâu ĐV?","Ty thể","Nhân","Lục lạp","Golgi",0],  
+[2,"Deamination ở?","Gan","Phổi","Da","Tim",0],  
+[2,"NH4+ dư chuyển thành?","Ure","Glucose","O2","CO2",0],  
+[2,"Purine gồm?","A,G","C,T","C,U","A,C",0],  
+[2,"Pyrimidine gồm?","C,T,U","A,G","A,T","G,C",0],  
+[2,"Acetobacter tạo?","Acid acetic","Acid lactic","Ethanol","Citric",0],  
+[2,"A.niger tạo?","Acid citric","Acid lactic","Ethanol","Lysine",0],  
+[2,"Quang tự dưỡng dùng?","CO2+ánh sáng","Hữu cơ","Không C","Không NL",0],  
+[2,"Hóa dị dưỡng như?","ĐV, nấm, đa số VK","TV","Tảo","Rêu",0],  
+[2,"NADH khác NADPH ở?","Dị hóa vs đồng hóa","Màu","Kích thước","Không khác",0],  
+[2,"FADH2 vào ETC ở?","Phức II","Phức I","Phức IV","Ngoài",0],  
+[2,"O2 nhận e tạo?","Nước","CO2","Glucose","ATP",0],  
+[2,"Thiếu O2 pyruvate thành?","Lactate/ethanol","CO2","Nước","O2",0],  
+[2,"Chuỗi ETC bơm?","H+","Na+","K+","Ca++",0],  
+[2,"Lên men lactic đồng hình tạo?","Chỉ lactate","Ethanol","CO2","Acetate",0],  
+[2,"Phô mai cần?","VK lactic","Nấm men","Virus","Tảo",0],  
+[2,"Bánh mì nở nhờ?","CO2 men rượu","O2","N2","H2",0],  
+[2,"Giấm tạo từ?","Ethanol + Acetobacter","Sữa","Đường trực tiếp","Thịt",0],  
+[2,"Dầu vào hô hấp sau?","Acetyl-CoA","Glucose","Pyruvate","Lactate",0],  
+[2,"Protein vào hô hấp sau khử amin thành?","Keto acid","Glucose","Acid béo","Nucleotide",0],  
+[2,"Urate lắng ở?","Khớp","Phổi","Mắt","Não",0],  
+[2,"Pha sáng giải phóng O2 từ?","Nước","CO2","Glucose","ATP",0],  
+[2,"ATP pha sáng dùng cho?","Calvin","Vận động","Co cơ","Dẫn truyền",0],  
+[2,"Stroma chứa?","Enzym Calvin","Chlorophyll","Mào","Roi",0],  
+[2,"Grana là?","Chồng thylakoid","Chất nền","Màng ngoài","Nhân",0],  
+[2,"Carotenoid làm?","Phụ trợ quang thu","Cố định CO2","Tạo ATP","Phân giải",0],  
+[2,"Điểm bù CO2 là?","Quang hợp=hô hấp","Tối đa","Bão hòa","Không",0],  
+[2,"Hô hấp sáng xảy ra ở?","C3 khi nóng, RubisCO nhận O2","Mọi lúc","Động vật","Vi khuẩn",0],  
+[2,"C4 thích nghi?","Nóng khô, ít quang hô hấp","Lạnh","Bóng tối","Ngập
